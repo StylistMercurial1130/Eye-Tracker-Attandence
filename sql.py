@@ -1,17 +1,18 @@
-from ctypes import sizeof
-from mailbox import Maildir
 from database import *
-
+from utils import pass_inp
+from utils import register_courses, teach_course
+import hashlib
 
 # Global databse_connection change arguments based on need !
 # should we make this modular ? whatever the other bois and gorls think 
-db_conn = connect_to_databse("attendence","postgres","1234")
+db_conn = connect_to_databse("attendence","postgres","hehelmao")
 
 def stu_check_credentials(mailid, password):
     # Code to retrieve password corresponding to the mail id
     # If the password matches the one in database, return True else False
     # If the mail id doesn't exist in the database, return -1
 
+    password = hashlib.md5(password.encode())
     query = "select password from student where mail_id = " + mailid + " ;"
 
     db_conn.cursor().execute(query=query)
@@ -37,7 +38,8 @@ def teach_check_credentials(mailid, password):
     # Code to retrieve password corresponding to the mail id
     # If the password matches the one in database, return True else False
     # If the mail id doesn't exist in the database, return -1
-    
+
+    password = hashlib.md5(password.encode())
     query = "select password from teacher where mail_id = " + mailid + " ;"
 
     db_conn.cursor().execute(query=query)
@@ -114,10 +116,11 @@ def get_attendance(courseid):
 def stu_register():
     name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
-    password = input('Enter a password: ')
-    student_id = input('Enter your student_id: ')
-    courses = input('Select the courses for the enrollment: ')
+    password = pass_inp(f'Enter the password: ', 'passw')['passw']
+    password = hashlib.md5(password.encode())
 
+    student_id = input('Enter your student id: ')
+    courses = register_courses() # returns a list of selected courses
     db_conn.cursor().execute("select mail_id from student")
 
     values = db_conn.cursor().fetchall()
@@ -138,7 +141,7 @@ def stu_register():
     insert_query = """
         insert into student values
         ('{}',{},ARRAY[{}],{},{})
-    """.format(student_id,name,courses_string,mailid,password)
+    """.format(name,student_id,mailid,password,courses_string, ) # TODO: NEEDS REWORKING
 
     db_conn.cursor().execute(insert_query)
     db_conn.cursor().execute("select student_id from student;")
@@ -158,9 +161,11 @@ def teach_register():
 
     name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
-    password = input('Enter a password: ')
-    teacher_id = input('Enter your roll teacher_id: ')
-    courses = input('Select the courses for the enrollment: ')
+    password = pass_inp(f'Enter the password: ', 'passw')['passw']
+    password = hashlib.md5(password.encode())
+
+    teacher_id = input('Enter your roll teacher id: ')
+    courses = teach_course() # returns a list of selected courses
 
     db_conn.cursor().execute("select mail_id from student")
 
@@ -184,7 +189,7 @@ def teach_register():
     insert_query = """
         insert into teacher values
         ('{}',{},ARRAY[{}],{},{})
-    """.format(teacher_id,name,courses_string,mailid,password)
+    """.format(teacher_id,name,courses_string,mailid,password) # NEEDS REWORKING
 
     db_conn.cursor().execute(insert_query)
     db_conn.cursor().execute("select teacher_id from teacher;")
@@ -200,3 +205,5 @@ def teach_register():
     # If the data doesn't exist add an entry to the corresponding table
     # On successful creation of the entry, return 1
     # If the mail id already exists in the database, return -1
+
+#TODO: prompt an attendance threshold for teachers
