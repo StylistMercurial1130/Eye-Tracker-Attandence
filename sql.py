@@ -1,4 +1,5 @@
 from ctypes import sizeof
+from mailbox import Maildir
 from database import *
 
 
@@ -91,6 +92,12 @@ def join_class(mailid, courseid):
     # eye status is a variable that has either true or false 
     # true: the student is looking at the camera
     # false: the student is not looking at the camera
+
+    class_status_polling = True
+
+    while class_status_polling:
+        print("something happens !")
+
     eye_status = True 
 
     # DB part
@@ -105,23 +112,89 @@ def get_attendance(courseid):
     return path
 
 def stu_register():
+    name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
     password = input('Enter a password: ')
-    rollno = input('Enter your roll number: ')
+    student_id = input('Enter your student_id: ')
     courses = input('Select the courses for the enrollment: ')
 
-    
+    db_conn.cursor().execute("select mail_id from student")
 
+    values = db_conn.cursor().fetchall()
+
+    if mailid in values:
+        return -1
+
+    courses = courses.replace(" ","")
+    courses = courses.split(",")
+
+    courses_string = ""
+
+    for course in courses : 
+        courses_string += "'{}',".format(course)
+
+    courses_string.strip(',')
+
+    insert_query = """
+        insert into student values
+        ('{}',{},ARRAY[{}],{},{})
+    """.format(student_id,name,courses_string,mailid,password)
+
+    db_conn.cursor().execute(insert_query)
+    db_conn.cursor().execute("select student_id from student;")
+
+    values = db_conn.cursor().fetchall()
+
+    if student_id in values:
+        return 1
+
+    return 0
     # Check if the mail id already exists in the database
     # If the data doesn't exist add an entry to the corresponding table
     # On successful creation of the entry, return 1
     # If the mail id already exists in the database, return -1
 
 def teach_register():
+
+    name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
     password = input('Enter a password: ')
-    rollno = input('Enter your roll number: ')
+    teacher_id = input('Enter your roll teacher_id: ')
     courses = input('Select the courses for the enrollment: ')
+
+    db_conn.cursor().execute("select mail_id from student")
+
+    values = db_conn.cursor().fetchall()
+
+    if mailid in values:
+        return -1
+
+    
+    courses = courses.replace(" ","")
+    courses = courses.split(",")
+
+    courses_string = ""
+
+    for course in courses : 
+        courses_string += "'{}',".format(course)
+
+    courses_string.strip(',')
+
+
+    insert_query = """
+        insert into teacher values
+        ('{}',{},ARRAY[{}],{},{})
+    """.format(teacher_id,name,courses_string,mailid,password)
+
+    db_conn.cursor().execute(insert_query)
+    db_conn.cursor().execute("select teacher_id from teacher;")
+
+    values = db_conn.cursor().fetchall()
+
+    if teacher_id in values:
+        return 1
+
+    return 0
 
     # Check if the mail id already exists in the database
     # If the data doesn't exist add an entry to the corresponding table
