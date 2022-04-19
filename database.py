@@ -1,6 +1,8 @@
 # database server code
 
 # import sys
+from operator import contains
+from secrets import choice
 import psycopg2
 
 
@@ -35,6 +37,26 @@ class_table_creation = """
     )
 """
 
+def create_table(conn) :
+
+    conn.autocommit = True
+    cur = conn.cursor()
+
+    table_list = cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
+    table_list = cur.fetchall()
+
+    table_list = [i[0] for i in table_list]
+    
+    if 'student' not in table_list : 
+        cur.execute(student_table_creation)
+        print("STUDENT TABLE CREATED !")
+
+    if 'teacher' not in table_list : 
+        cur.execute(teacher_table_creation)
+        print("TEACHER TABLE CREATER")
+
+    print("ALL TABLES CREATED !")
+
 def connect_to_databse(database_name,database_username,database_password) :
 
     conn = None
@@ -50,20 +72,11 @@ def connect_to_databse(database_name,database_username,database_password) :
         return None
 
     '''create a table here , might be usefull '''
-
-    conn.autocommit = True
-    cur = conn.cursor()
-
-    cur.execute("drop table student , teacher , class;")  
-    cur.execute(student_table_creation)
-    cur.execute(teacher_table_creation)
-    
-
-
-
-    print(values)
+    create_table(conn)
 
     return conn
+
+
 
 connect_to_databse("attendence","postgres","1234")
 
