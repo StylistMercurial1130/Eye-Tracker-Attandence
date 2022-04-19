@@ -126,23 +126,30 @@ teach_courses = [
 ]
 
 def register_courses():
-    courses = []
+    courses = {}
 
     c = prompt(available_courses)['courses']
-    courses += c
+    for i in c:
+        splitted = i.split('-')
+        courses[splitted[0]] = splitted[1]
     
     c = prompt(elective1)['elective1']
-    courses.append(c)
+    courses[c.split('-')[0]] = c.split('-')[1]
     
     c = prompt(elective2)['elective2']
-    courses.append(c)
+    courses[c.split('-')[0]] = c.split('-')[1]
     
     return courses # ','.join(courses) # if comma seperated values are required
 
 def teach_course():
-    return prompt([{   
+    resp = prompt([{   
             'type': 'checkbox',
             'name': 'teach',
             'message': 'Choose the course to teach',
             'choices': teach_courses
             }])['teach']
+    reg = {}
+    for i in resp:
+        splitted = i.split('-')
+        reg[splitted[0]] = splitted[1]
+    return reg
