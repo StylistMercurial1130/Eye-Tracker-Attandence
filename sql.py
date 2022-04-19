@@ -110,6 +110,8 @@ def get_attendance(courseid):
     # make a csv file of all the data 
     # save the csv file based on the path chosen by the user
     # return the path of the csv location
+    
+    #TODO: ASK FOR THE THRESHOLD ATTENDANCE (%)
     path = 'C:\\Users\\User\\Desktop\\<courseid>_attendance.csv'
     return path
 
@@ -123,14 +125,14 @@ def stu_register():
     courses = register_courses() # returns a list of selected courses
     db_conn.cursor().execute("select mail_id from student")
 
-    # values = db_conn.cursor().fetchall()
+    values = db_conn.cursor().fetchall()
 
-    # if mailid in values:
-    #     return -1
+    if mailid in values:
+        return -1
 
     insert_query = f"""
         insert into student values
-        ('{name}',{student_id},{mailid},{password},ARRAY[{','.join(courses.values())}],ARRAY[{','.join(courses.keys())}])
+        ('{name}','{student_id}','{mailid}','{password}',ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.values())}],ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.keys())}])
     """
     import pdb; pdb.set_trace()
 
@@ -147,6 +149,7 @@ def stu_register():
     # If the data doesn't exist add an entry to the corresponding table
     # On successful creation of the entry, return 1
     # If the mail id already exists in the database, return -1
+
 stu_register()
 def teach_register():
 
@@ -167,7 +170,7 @@ def teach_register():
 
     insert_query = f"""
         insert into teacher values
-        ('{name}',{teacher_id},ARRAY[{','.join(list(courses.values()))}],ARRAY[{','.join(list(courses.keys()))}],{mailid},{password})
+        ('{name}','{teacher_id}',ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.values())}],ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.keys())}],'{mailid}','{password}')
     """
 
     db_conn.cursor().execute(insert_query)
