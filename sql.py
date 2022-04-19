@@ -12,7 +12,7 @@ def stu_check_credentials(mailid, password):
     # If the password matches the one in database, return True else False
     # If the mail id doesn't exist in the database, return -1
 
-    password = hashlib.md5(password.encode())
+    password = hashlib.md5(password.encode()).hexdigest()
     query = "select password from student where mail_id = " + mailid + " ;"
 
     db_conn.cursor().execute(query=query)
@@ -39,7 +39,7 @@ def teach_check_credentials(mailid, password):
     # If the password matches the one in database, return True else False
     # If the mail id doesn't exist in the database, return -1
 
-    password = hashlib.md5(password.encode())
+    password = hashlib.md5(password.encode()).hexdigest()
     query = "select password from teacher where mail_id = " + mailid + " ;"
 
     db_conn.cursor().execute(query=query)
@@ -117,31 +117,22 @@ def stu_register():
     name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
     password = pass_inp(f'Enter the password: ', 'passw')['passw']
-    password = hashlib.md5(password.encode())
+    password = hashlib.md5(password.encode()).hexdigest()
 
     student_id = input('Enter your student id: ')
     courses = register_courses() # returns a list of selected courses
     db_conn.cursor().execute("select mail_id from student")
 
-    values = db_conn.cursor().fetchall()
+    # values = db_conn.cursor().fetchall()
 
-    if mailid in values:
-        return -1
+    # if mailid in values:
+    #     return -1
 
-    courses = courses.replace(" ","")
-    courses = courses.split(",")
-
-    courses_string = ""
-
-    for course in courses : 
-        courses_string += "'{}',".format(course)
-
-    courses_string.strip(',')
-
-    insert_query = """
+    insert_query = f"""
         insert into student values
-        ('{}',{},ARRAY[{}],{},{})
-    """.format(name,student_id,mailid,password,courses_string, ) # TODO: NEEDS REWORKING
+        ('{name}',{student_id},{mailid},{password},ARRAY[{','.join(courses.values())}],ARRAY[{','.join(courses.keys())}])
+    """
+    import pdb; pdb.set_trace()
 
     db_conn.cursor().execute(insert_query)
     db_conn.cursor().execute("select student_id from student;")
@@ -156,13 +147,13 @@ def stu_register():
     # If the data doesn't exist add an entry to the corresponding table
     # On successful creation of the entry, return 1
     # If the mail id already exists in the database, return -1
-
+stu_register()
 def teach_register():
 
     name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
     password = pass_inp(f'Enter the password: ', 'passw')['passw']
-    password = hashlib.md5(password.encode())
+    password = hashlib.md5(password.encode()).hexdigest()
 
     teacher_id = input('Enter your roll teacher id: ')
     courses = teach_course() # returns a list of selected courses
@@ -174,22 +165,10 @@ def teach_register():
     if mailid in values:
         return -1
 
-    
-    courses = courses.replace(" ","")
-    courses = courses.split(",")
-
-    courses_string = ""
-
-    for course in courses : 
-        courses_string += "'{}',".format(course)
-
-    courses_string.strip(',')
-
-
-    insert_query = """
+    insert_query = f"""
         insert into teacher values
-        ('{}',{},ARRAY[{}],{},{})
-    """.format(teacher_id,name,courses_string,mailid,password) # NEEDS REWORKING
+        ('{name}',{teacher_id},ARRAY[{','.join(list(courses.values()))}],ARRAY[{','.join(list(courses.keys()))}],{mailid},{password})
+    """
 
     db_conn.cursor().execute(insert_query)
     db_conn.cursor().execute("select teacher_id from teacher;")
