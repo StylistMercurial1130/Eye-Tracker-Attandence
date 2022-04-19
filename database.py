@@ -74,8 +74,6 @@ def connect_to_databse(database_name,database_username,database_password) :
     '''create a table here , might be usefull '''
     create_table(conn)
 
-    return conn
-
 
 
 connect_to_databse("attendence","postgres","1234")
