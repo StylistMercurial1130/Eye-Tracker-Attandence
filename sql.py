@@ -150,7 +150,7 @@ def stu_register():
     # On successful creation of the entry, return 1
     # If the mail id already exists in the database, return -1
 
-stu_register()
+# stu_register()
 def teach_register():
 
     name = input("Enter your name : ")
