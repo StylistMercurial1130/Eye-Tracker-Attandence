@@ -189,7 +189,7 @@ def teach_register():
     insert_query = """
         insert into teacher values
         ('{}',{},ARRAY[{}],{},{})
-    """.format(teacher_id,name,courses_string,mailid,password) # NEEDS REWORKING
+    """.format(teacher_id,name,courses_string,mailid,password) # NEEDS REWORKING, YEAH that shit is not working
 
     db_conn.cursor().execute(insert_query)
     db_conn.cursor().execute("select teacher_id from teacher;")
