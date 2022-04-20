@@ -1,45 +1,44 @@
+import enum
+from unittest import result
 from database import *
 from utils import pass_inp
 from utils import register_courses, teach_course
 import hashlib
+from commands import *
 
-# Global databse_connection change arguments based on need !
-# should we make this modular ? whatever the other bois and gorls think 
-db_conn = connect_to_databse("attendence","postgres","hehelmao")
-
-def stu_check_credentials(mailid, password):
+def stu_check_credentials(db_conn,mailid, password):
     # Code to retrieve password corresponding to the mail id
     # If the password matches the one in database, return True else False
     # If the mail id doesn't exist in the database, return -1
+    password = hashlib.md5(password.encode())
 
-    password = hashlib.md5(password.encode()).hexdigest()
-    query = "select password from student where mail_id = " + mailid + " ;"
+    query = build_select_query(
+        credentials_type.PASSWORD,
+        "student",
+        "mail_id = '{}'".format(mailid)
+    )
 
-    db_conn.cursor().execute(query=query)
+    print("yay it works ! : " + query)
 
-    result = db_conn.cursor().fetchall()
+    result = response(query,db_conn)
+
+    print(result)
 
     if not result:
         return -1
 
-    fixed_result = []
 
-    for value in result : 
-        fixed_result.append(list(map(str,list(value))))
-
-    res = fixed_result[0][0]
-
-    if res != password:
+    if result[0] != password:
         return False
 
     return True
 
-def teach_check_credentials(mailid, password):
+def teach_check_credentials(db_conn,mailid, password):
     # Code to retrieve password corresponding to the mail id
     # If the password matches the one in database, return True else False
     # If the mail id doesn't exist in the database, return -1
 
-    password = hashlib.md5(password.encode()).hexdigest()
+    password = hashlib.md5(password.encode())
     query = "select password from teacher where mail_id = " + mailid + " ;"
 
     db_conn.cursor().execute(query=query)
@@ -61,7 +60,7 @@ def teach_check_credentials(mailid, password):
 
     return True
 
-def stu_courses_registered(mailid):
+def stu_courses_registered(db_conn,mailid):
     # Code to retrieve courses registered by the student with this mail id  
     # return course as a list or a dictionary with the course id as the key and course name as the value
 
@@ -73,13 +72,12 @@ def stu_courses_registered(mailid):
 
     return courses
 
-def teach_courses_registered(mailid):
+def teach_courses_registered(db_conn,mailid):
     # Code to retrieve courses registered by the student with this mail id
     # return course as a list or a dictionary with the course id as the key and course name as the value
     
-    
     query = "select course_id from teacher where " + "mail_id = " + mailid + ";"
-
+   
     db_conn.cursor().execute(query=query)
 
     courses = db_conn.cursor().fetchall()
@@ -88,12 +86,15 @@ def teach_courses_registered(mailid):
 
 
 
-def join_class(mailid, courseid):
+def join_class(db_conn,mailid, courseid):
     # Put in an infinite loop until the student logs out of the class
     # track the eyes and update the attendance in the database
     # eye status is a variable that has either true or false 
     # true: the student is looking at the camera
     # false: the student is not looking at the camera
+
+
+
 
     class_status_polling = True
 
@@ -105,13 +106,11 @@ def join_class(mailid, courseid):
     # DB part
     # code to update the attendance of the student for the corresponding course in the database
 
-def get_attendance(courseid):
+def get_attendance(db_conn,courseid):
     # get the data of the students' attendance for the given course id
     # make a csv file of all the data 
     # save the csv file based on the path chosen by the user
     # return the path of the csv location
-    
-    #TODO: ASK FOR THE THRESHOLD ATTENDANCE (%)
     path = 'C:\\Users\\User\\Desktop\\<courseid>_attendance.csv'
     return path
 
@@ -119,22 +118,36 @@ def stu_register():
     name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
     password = pass_inp(f'Enter the password: ', 'passw')['passw']
-    password = hashlib.md5(password.encode()).hexdigest()
+    password = hashlib.md5(password.encode())
 
     student_id = input('Enter your student id: ')
     courses = register_courses() # returns a list of selected courses
-    db_conn.cursor().execute("select mail_id from student")
 
-    values = db_conn.cursor().fetchall()
+    cur = db_conn.cursor()
+    values = cur.execute("select mail_id from student")
+    values = cur.fetchall()
+
+    values = [i[0] for i in values]
 
     if mailid in values:
         return -1
 
-    insert_query = f"""
+    print(values)
+
+    courses = courses.replace(" ","")
+    courses = courses.split(",")
+
+    courses_string = ""
+
+    for course in courses : 
+        courses_string += "'{}',".format(course)
+
+    courses_string.strip(',')
+
+    insert_query = """
         insert into student values
-        ('{name}','{student_id}','{mailid}','{password}',ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.values())}],ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.keys())}])
-    """
-    import pdb; pdb.set_trace()
+        ('{}',{},ARRAY[{}],{},{})
+    """.format(name,student_id,mailid,password,courses_string, ) # TODO: NEEDS REWORKING
 
     db_conn.cursor().execute(insert_query)
     db_conn.cursor().execute("select student_id from student;")
@@ -150,13 +163,12 @@ def stu_register():
     # On successful creation of the entry, return 1
     # If the mail id already exists in the database, return -1
 
-# stu_register()
-def teach_register():
+def teach_register(db_conn):
 
     name = input("Enter your name : ")
     mailid = input('Enter your email id: ')
     password = pass_inp(f'Enter the password: ', 'passw')['passw']
-    password = hashlib.md5(password.encode()).hexdigest()
+    password = hashlib.md5(password.encode())
 
     teacher_id = input('Enter your roll teacher id: ')
     courses = teach_course() # returns a list of selected courses
@@ -168,10 +180,22 @@ def teach_register():
     if mailid in values:
         return -1
 
-    insert_query = f"""
+    
+    courses = courses.replace(" ","")
+    courses = courses.split(",")
+
+    courses_string = ""
+
+    for course in courses : 
+        courses_string += "'{}',".format(course)
+
+    courses_string.strip(',')
+
+
+    insert_query = """
         insert into teacher values
-        ('{name}','{teacher_id}',ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.values())}],ARRAY[{', '.join('"'+item.strip()+'"' for item in courses.keys())}],'{mailid}','{password}')
-    """
+        ('{}',{},ARRAY[{}],{},{})
+    """.format(teacher_id,name,courses_string,mailid,password) # NEEDS REWORKING, YEAH that shit is not working
 
     db_conn.cursor().execute(insert_query)
     db_conn.cursor().execute("select teacher_id from teacher;")
