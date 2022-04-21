@@ -1,5 +1,4 @@
 from enum import Enum
-import psycopg2
 
 class credentials_type(Enum) : 
     NAME = 0,
@@ -9,6 +8,7 @@ class credentials_type(Enum) :
     COURSE_NAME = 4
     STUDENT_ID = 5
     TEACHER_ID = 6
+    ALL = 7
 
 def enum_to_query_string (type):
     match type:
@@ -26,6 +26,9 @@ def enum_to_query_string (type):
             return 'student_id'
         case credentials_type.TEACHER_ID : 
             return 'teacher_id'
+        case credentials_type.ALL : 
+            return "*"
+
 
 def build_select_query(credentail_type : credentials_type,*arg : str) -> str:
 
@@ -42,13 +45,3 @@ def build_select_query(credentail_type : credentials_type,*arg : str) -> str:
     query += ';'
 
     return query
-
-def response(request : str,db_conn) : 
-
-    cur = db_conn.cursor()
-    values = cur.execute(request)
-    values = cur.fetchall()
-
-    values = [i[0] for i in values]
-
-    return values

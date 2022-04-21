@@ -1,40 +1,47 @@
 # database server code
 
-# import sys
-from operator import contains
-from secrets import choice
 import psycopg2
-
 
 student_table_creation = """
     
     create table student(
-        name        varchar(20),
-        student_id  varchar(10) PRIMARY KEY,
-        mail_id     varchar(20),
-        password    varchar(10),
-        course_id   varchar(30)[],
-        course_name varchar(40)[]
+        name        varchar(100),
+        student_id  varchar(100),
+        mail_id     varchar(100) PRIMARY KEY,
+        password    varchar(100),
+        course_id   varchar(100)[],
+        course_name varchar(100)[]
     );
 """
 teacher_table_creation = """
     create table teacher(
-        name        varchar(20),
-        teacher_id  varchar(10) PRIMARY KEY,
-        mail_id     varchar(20),
-        password    varchar(10),
-        course_id   varchar(30)[],
-        course_name varchar(40)[]
+        name        varchar(100) ,
+        teacher_id  varchar(100) ,
+        course_name varchar(100)[],
+        course_id   varchar(100)[],
+        mail_id     varchar(100) PRIMARY KEY,
+        password    varchar(100)
     );
 """
 
-# add column for each courses !
+# add column for each courses ! when done with eye tracking !
 
 class_table_creation = """
     create table class(
-        student_id varchar(10) REFERENCES student(student_id),
-        student_name varchar(10) REFERENCES student(name)    
-    )
+        student_id varchar(100),
+        mail_id varchar(100) PRIMARY KEY,
+        _19ELC311 float(20),
+        _19ELC312 float(20),
+        _19ELC313 float(20),
+        _19ELC381 float(20),
+        _CIR_ELC_2022 float(20),
+        _19LAW300 float(20),
+        _19CSE366 float(20),
+        _19CSE448 float(20),
+        _21ECE431 float(20),
+        _19EEE335 float(20),
+        _19EEE434 float(20) 
+    );
 """
 
 def create_table(conn) :
@@ -53,7 +60,11 @@ def create_table(conn) :
 
     if 'teacher' not in table_list : 
         cur.execute(teacher_table_creation)
-        print("TEACHER TABLE CREATER")
+        print("TEACHER TABLE CREATED !")
+
+    if 'class' not in table_list : 
+        cur.execute(class_table_creation)
+        print("CLASS TABLE CREATED !")
 
     print("ALL TABLES CREATED !")
 
@@ -74,24 +85,14 @@ def connect_to_databse(database_name,database_username,database_password) :
     '''create a table here , might be usefull '''
     create_table(conn)
 
+    print("SUCCEFULLY CONNECTED TO DATABSE " + database_name)
 
+    return conn
 
-connect_to_databse("attendence","postgres","1234")
+def response(request : str,db_conn) : 
 
+    cur = db_conn.cursor()
+    values = cur.execute(request)
+    values = cur.fetchall()
 
-# conn = connect_to_databse("theater","postgres","1234")
-# cursor = conn.cursor()
-
-# cursor.execute("select title from movie where star = 'Jackie Chn';")
-
-# values = cursor.fetchall()
-
-# if not values:
-#     print("its empty !")
-
-# fixed_value = []
-
-# for value in values : 
-#     fixed_value.append(list(map(str,list(value))))
-
-# print(fixed_value)
+    return values

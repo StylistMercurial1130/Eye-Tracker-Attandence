@@ -2,7 +2,6 @@ import sys,os
 from PyInquirer.prompt import prompt
 from PyInquirer import Separator
 
-
 def clear_screen():
     if sys.platform=='win32' or os.name=='nt':
         os.system("cls")
@@ -76,7 +75,7 @@ available_courses = [
                 'name': '19ELC381 - Open Lab'
             },
             {
-                'name': 'CIR ELC 2022 - Soft Skills III'
+                'name': 'CIR_ELC_2022 - Soft Skills III'
             },
             {
                 'name': '19LAW300 - Indian Constitution'
@@ -116,7 +115,7 @@ teach_courses = [
         {'name':'19ELC312 - Database Systems and Programming'},
         {'name':'19ELC313 - Power Electronics and Drives'},
         {'name':'19ELC381 - Open Lab'},
-        {'name':'CIR ELC 2022 - Soft Skills III'},
+        {'name':'CIR_ELC_2022 - Soft Skills III'},
         {'name':'19LAW300 - Indian Constitution'},
         {'name':'19CSE366 - Cyber Security'},
         {'name':'19CSE448 - Block Chain'},
@@ -139,7 +138,7 @@ def register_courses():
     c = prompt(elective2)['elective2']
     courses[c.split('-')[0]] = c.split('-')[1]
     
-    return courses # ','.join(courses) # if comma seperated values are required
+    return courses
 
 def teach_course():
     resp = prompt([{   
