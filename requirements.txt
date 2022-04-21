@@ -1,0 +1,5 @@
+dlib
+opencv-python
+PyInquirer
+keyboard
+psycopg2
